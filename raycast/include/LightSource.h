@@ -6,9 +6,10 @@ typedef struct LightSource {
     LightBeam *lightBeams;
     int lightBeamQuantity;
     Color color;
+    Vector2 *collidedPoints;
 } LightSource;
 
-LightSource *createLightSource( int lightBeamQuantity, Color color );
+LightSource *createLightSource( int lightBeamQuantity, Color color, float startAngle, int obstacleCount );
 void destroyLightSource( LightSource *ls );
 void updateLightSource( LightSource *ls );
 void drawLightSource( LightSource *ls );

@@ -23,7 +23,7 @@
 #include "Obstacle.h"
 #include "utils.h"
 
-#define MAX_OBSTACLES 14
+#define MAX_OBSTACLES 20
 
 /**
  * @brief Creates a dinamically allocated GameWorld struct instance.
@@ -34,25 +34,34 @@ GameWorld* createGameWorld( void ) {
     int h = GetScreenHeight();
 
     GameWorld *gw = (GameWorld*) malloc( sizeof( GameWorld ) );
-    gw->ls = createLightSource( 360, YELLOW );
+    gw->ls = createLightSource( 360, YELLOW, 0, MAX_OBSTACLES );
     gw->obstacleQuantity = MAX_OBSTACLES;
     gw->obstacles = (Obstacle*) malloc( gw->obstacleQuantity * sizeof( Obstacle ) );
 
-    gw->obstacles[0] = (Obstacle){ { 600, 100 }, { 600, 700 }, .color = WHITE };
+    /*gw->obstacles[0] = (Obstacle){ { 600, 100 }, { 600, 700 }, .color = WHITE };
     gw->obstacles[1] = (Obstacle){ { 200, 100 }, { 200, 700 }, .color = WHITE };
     gw->obstacles[2] = (Obstacle){ { 100, 300 }, { 300, 100 }, .color = WHITE };
     gw->obstacles[3] = (Obstacle){ { 300, 600 }, { 500, 600 }, .color = WHITE };
-    gw->obstacles[4] = (Obstacle){ { 700, 100 }, { 700, 700 }, .color = WHITE };
-    gw->obstacles[5] = (Obstacle){ {  50,  50 }, { 750,  50 }, .color = WHITE };
-    gw->obstacles[6] = (Obstacle){ { 750,  50 }, { 750, 750 }, .color = WHITE };
-    gw->obstacles[7] = (Obstacle){ { 750, 750 }, {  50, 750 }, .color = WHITE };
-    gw->obstacles[8] = (Obstacle){ {  50, 750 }, {  50,  50 }, .color = WHITE };
-    gw->obstacles[9] = (Obstacle){ {  50, 750 }, {  50,  50 }, .color = WHITE };
+    gw->obstacles[4] = (Obstacle){ { 700, 700 }, { 700, 100 }, .color = WHITE };
+    gw->obstacles[5] = (Obstacle){ { 300, 200 }, { 500, 200 }, .color = WHITE };
 
-    gw->obstacles[10] = (Obstacle){ { 0, 0 }, { w, 0 }, .color = WHITE };
-    gw->obstacles[11] = (Obstacle){ { w, 0 }, { w, h }, .color = WHITE };
-    gw->obstacles[12] = (Obstacle){ { w, h }, { 0, h }, .color = WHITE };
-    gw->obstacles[13] = (Obstacle){ { 0, h }, { 0, 0 }, .color = WHITE };
+    gw->obstacles[6] = (Obstacle){ {  50,  50 }, { 750,  50 }, .color = WHITE };
+    gw->obstacles[7] = (Obstacle){ { 750,  50 }, { 750, 750 }, .color = WHITE };
+    gw->obstacles[8] = (Obstacle){ { 750, 750 }, {  50, 750 }, .color = WHITE };
+    gw->obstacles[9] = (Obstacle){ {  50, 750 }, {  50,  50 }, .color = WHITE };*/
+
+    gw->obstacles[0] = (Obstacle){ { 0, 0 }, { w, 0 }, .color = WHITE };
+    gw->obstacles[1] = (Obstacle){ { w, 0 }, { w, h }, .color = WHITE };
+    gw->obstacles[2] = (Obstacle){ { w, h }, { 0, h }, .color = WHITE };
+    gw->obstacles[3] = (Obstacle){ { 0, h }, { 0, 0 }, .color = WHITE };
+
+    for ( int i = 4; i < gw->obstacleQuantity; i++ ) {
+        gw->obstacles[i] = (Obstacle){ 
+            { GetRandomValue( 0, w ), GetRandomValue( 0, w ) }, 
+            { GetRandomValue( 0, h ), GetRandomValue( 0, h ) },
+            .color = WHITE
+        };
+    }
 
     return gw;
 
@@ -73,9 +82,9 @@ void destroyGameWorld( GameWorld *gw ) {
 void inputAndUpdateGameWorld( GameWorld *gw ) {
 
     LightSource *ls = gw->ls;
-    updateLightSource( ls );
+    Vector2 *collidedPoints = ls->collidedPoints;
 
-    Vector2 collidedPoints[MAX_OBSTACLES];
+    updateLightSource( ls );
 
     for ( int i = 0; i < ls->lightBeamQuantity; i++ ) {
         LightBeam *lb = &ls->lightBeams[i];
@@ -83,26 +92,29 @@ void inputAndUpdateGameWorld( GameWorld *gw ) {
         for ( int j = 0; j < gw->obstacleQuantity; j++ ) {
             Obstacle *ob = &gw->obstacles[j];
             Vector2 ip;
-            if ( getIntersectionPoint( lb, ob, &ip ) && containsPoint( ob, &ip ) ) {
-                //DrawCircleV( ip, 10, lb->color );
+            //if ( getIntersectionPoint( lb, ob, &ip ) && containsPoint( ob, &ip ) ) {
+            if ( getIntersectionPoint( lb, ob, &ip ) ) {
+                //DrawCircleV( ip, 10, Fade( lb->color, 0.5 ) );
                 collidedPoints[qc++] = ip;
             }
         }
         if ( qc != 0 ) {
             
             // insertion sort
-            for ( int m = 0; m < qc; m++ ) {
-                for ( int n = m+1; n > 0; n-- ) {
+            for ( int m = 1; m < qc; m++ ) {
+                for ( int n = m; n > 0; n-- ) {
                     float ca1 = collidedPoints[n].x - ls->pos.x;
                     float ca2 = collidedPoints[n].y - ls->pos.y;
                     float da = ca1*ca1 + ca2*ca2;
                     float cb1 = collidedPoints[n-1].x - ls->pos.x;
                     float cb2 = collidedPoints[n-1].y - ls->pos.y;
                     float db = cb1*cb1 + cb2*cb2;
-                    if ( da < db ) {
+                    if ( db > da ) {
                         Vector2 temp = collidedPoints[n];
                         collidedPoints[n] = collidedPoints[n-1];
                         collidedPoints[n-1] = temp;
+                    } else {
+                        break;
                     }
                 }
             }
@@ -113,7 +125,7 @@ void inputAndUpdateGameWorld( GameWorld *gw ) {
         } else {
             lb->endDraw = ls->pos;
         }
-        
+
     }
 
     /*for ( int i = 0; i < gw->obstacleQuantity; i++ ) {
@@ -128,8 +140,6 @@ void inputAndUpdateGameWorld( GameWorld *gw ) {
             }
         }
     }*/
-
-
 
 }
 

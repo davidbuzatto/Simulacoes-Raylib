@@ -17,7 +17,7 @@ int main( void ) {
     GameWindow *gameWindow = createGameWindow(
         800,             // width
         800,             // height
-        "Raycast!",      // title
+        "Raycasting!",   // title
         60,              // target FPS
         true,            // antialiasing
         false,           // resizable
