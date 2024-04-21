@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "obstacle.h": "c",
+        "stdbool.h": "c",
+        "lightsource.h": "c",
+        "stdlib.h": "c"
+    }
+}
