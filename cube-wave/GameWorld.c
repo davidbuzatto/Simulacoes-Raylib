@@ -52,6 +52,7 @@ GameWorld* createGameWorld( void ) {
         { 2,  1,  0 },
     };
 
+    // squared
     int starts[3][3] = {
         { 2, 1, 2 },
         { 1, 0, 1 },
@@ -69,7 +70,8 @@ GameWorld* createGameWorld( void ) {
         int localStartStep = -1;
 
         for ( int j = 0; j < gw->n; j++ ) {
-
+            
+            // circle
             float dist = hypotf( mid - i, mid - j );
 
             gw->bars[i*gw->n+j] = (Bar){
