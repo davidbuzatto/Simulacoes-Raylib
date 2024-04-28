@@ -15,8 +15,8 @@
 int main( void ) {
 
     GameWindow *gameWindow = createGameWindow(
-        1200,             // width
-        1200,             // height
+        1200,            // width
+        1200,            // height
         "Cube Wave",     // title
         60,              // target FPS
         true,            // antialiasing
