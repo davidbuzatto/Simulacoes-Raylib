@@ -69,7 +69,8 @@ void drawBar( Bar *bar ) {
     // colors
     //bar->color = ColorFromHSV( lerp( 60, 200, bar->percent ), 1, 0.7 );
     //bar->color = ColorFromHSV( lerp( 0, 50, bar->percent ), 1, 0.7 );
-    bar->color = ColorFromHSV( lerp( 0, 300, bar->percent ), 1, 0.7 );
+    //bar->color = ColorFromHSV( lerp( 0, 300, bar->percent ), 1, 0.7 );
+    bar->color = ColorFromHSV( lerp( 240, 190, bar->percent ), 1, 0.7 );
 
     Color darkerColor = ColorBrightness( bar->color, -0.5 );
     Color lighterColor = ColorBrightness( bar->color, 0.5 );

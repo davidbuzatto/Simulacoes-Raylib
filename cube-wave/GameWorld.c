@@ -27,14 +27,18 @@ GameWorld* createGameWorld( void ) {
 
     GameWorld *gw = (GameWorld*) malloc( sizeof( GameWorld ) );
 
-    gw->n = 37;
+    //gw->n = 37;
+    gw->n = 121;
     gw->bars = (Bar*) malloc( gw->n * gw->n * sizeof( Bar ) );
 
     int width = 32;
     int topDiagonalHeight = 18;
+    //int width = 8;
+    //int topDiagonalHeight = 4;
     int yOffset = topDiagonalHeight / 2;
     int xc = GetScreenWidth() / 2 - (width * gw->n/2) + width / 2;
-    int yc = GetScreenHeight() / 2 - (yOffset * gw->n/10);
+    //int yc = GetScreenHeight() / 2 - (yOffset * gw->n/10);
+    int yc = GetScreenHeight() / 2;
 
     /*Color colors[3][3] = {
         { RED, ORANGE, YELLOW },
@@ -56,6 +60,7 @@ GameWorld* createGameWorld( void ) {
 
     int globalStart = gw->n - 1;
     int globalStartStep = -1;
+    int mid = gw->n / 2;
     
     for ( int i = 0; i < gw->n; i++ ) {
 
@@ -64,15 +69,22 @@ GameWorld* createGameWorld( void ) {
         int localStartStep = -1;
 
         for ( int j = 0; j < gw->n; j++ ) {
+
+            float dist = hypotf( mid - i, mid - j );
+
             gw->bars[i*gw->n+j] = (Bar){
                 .x = xc + j * width + ( width/2 * offset ),
                 .y = yc + offset * yOffset,
                 .width = width,
-                .minHeight = 70,
-                .maxHeight = 300,
+                //.minHeight = 30,
+                .minHeight = 50,
+                //.maxHeight = 100,
+                .maxHeight = 200,
                 .topDiagonalHeight = topDiagonalHeight,
                 .percent = 0,
-                .angle = localStart * 15,
+                //.angle = localStart * 15,
+                .angle = dist * 30,
+                //.angle = dist * 10,
                 .angleStep = 3,
                 .color = BLUE
             };
@@ -124,8 +136,8 @@ void drawGameWorld( GameWorld *gw ) {
 
     BeginDrawing();
     ClearBackground( WHITE );
-
-    // infers level by level drawing order from top left corner
+    
+    // infers level by level drawing order from top right corner to bottom left corner
 
     int quantity = 1;
     int inc = 1;
@@ -155,12 +167,6 @@ void drawGameWorld( GameWorld *gw ) {
         }
 
     }
-
-    /*for ( int i = 0; i < gw->n; i++ ) {
-        for ( int j = 0; j < gw->n; j++ ) {
-            drawBar( &gw->bars[i*gw->n+j] );
-        }
-    }*/
 
     EndDrawing();
 
