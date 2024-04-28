@@ -6,11 +6,11 @@
  * @copyright Copyright (c) 2024
  */
 #pragma once
-#include "Bar.h"
+#include "BarStrip.h"
 
 typedef struct GameWorld {
-    Bar *bars;
-    int n;
+    BarStrip *barStrips;
+    int barStripsQuantity;
 } GameWorld;
 
 /**

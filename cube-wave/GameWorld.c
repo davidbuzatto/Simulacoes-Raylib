@@ -7,6 +7,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
 #include "GameWorld.h"
@@ -26,64 +27,69 @@ GameWorld* createGameWorld( void ) {
 
     GameWorld *gw = (GameWorld*) malloc( sizeof( GameWorld ) );
 
-    gw->barQuantity = 13;
-    gw->bars = (Bar*) malloc( gw->barQuantity * sizeof( Bar ) );
+    gw->n = 37;
+    gw->bars = (Bar*) malloc( gw->n * gw->n * sizeof( Bar ) );
 
-    Bar *bars = gw->bars;
-
-    int xc = GetScreenWidth() / 2;
-    int yc = GetScreenHeight() / 2;
     int width = 32;
-    int minHeight = 70;
-    int maxHeight = 200;
     int topDiagonalHeight = 18;
-    float angleStep = 3;
-    Color color = GREEN;
+    int yOffset = topDiagonalHeight / 2;
+    int xc = GetScreenWidth() / 2 - (width * gw->n/2) + width / 2;
+    int yc = GetScreenHeight() / 2 - (yOffset * gw->n/10);
 
-    int q = gw->barQuantity / 2 + 1;
-    int k = 0;
+    /*Color colors[3][3] = {
+        { RED, ORANGE, YELLOW },
+        { PURPLE, GREEN, VIOLET },
+        { GRAY, MAGENTA, BLUE },
+    };
 
-    for ( int i = 0; i < q; i++ ) {
-        if ( i == 0 ) {
-            bars[k++] = (Bar){
-                .x = xc,
-                .y = yc,
+    int offsets[3][3] = {
+        { 0, -1, -2 },
+        { 1,  0, -1 },
+        { 2,  1,  0 },
+    };
+
+    int starts[3][3] = {
+        { 2, 1, 2 },
+        { 1, 0, 1 },
+        { 2, 1, 2 },
+    };*/
+
+    int globalStart = gw->n - 1;
+    int globalStartStep = -1;
+    
+    for ( int i = 0; i < gw->n; i++ ) {
+
+        int offset = i;
+        int localStart = globalStart;
+        int localStartStep = -1;
+
+        for ( int j = 0; j < gw->n; j++ ) {
+            gw->bars[i*gw->n+j] = (Bar){
+                .x = xc + j * width + ( width/2 * offset ),
+                .y = yc + offset * yOffset,
                 .width = width,
-                .minHeight = minHeight,
-                .maxHeight = maxHeight,
+                .minHeight = 70,
+                .maxHeight = 300,
                 .topDiagonalHeight = topDiagonalHeight,
-                .percent = (float) k / gw->barQuantity,
-                .angle = (float) k / gw->barQuantity * 360,
-                .angleStep = angleStep,
-                .color = color
+                .percent = 0,
+                .angle = localStart * 15,
+                .angleStep = 3,
+                .color = BLUE
             };
-        } else {
-            int base = k+1;
-            bars[k++] = (Bar){
-                .x = xc - i * width,
-                .y = yc,
-                .width = width,
-                .minHeight = minHeight,
-                .maxHeight = maxHeight,
-                .topDiagonalHeight = topDiagonalHeight,
-                .percent = (float) k / gw->barQuantity,
-                .angle = (float) base / gw->barQuantity * 360,
-                .angleStep = angleStep,
-                .color = color
-            };
-            bars[k++] = (Bar){
-                .x = xc + i * width,
-                .y = yc,
-                .width = width,
-                .minHeight = minHeight,
-                .maxHeight = maxHeight,
-                .topDiagonalHeight = topDiagonalHeight,
-                .percent = (float) k / gw->barQuantity,
-                .angle = (float) base / gw->barQuantity * 360,
-                .angleStep = angleStep,
-                .color = color
-            };
+
+            offset--;
+            localStart += localStartStep;
+            if ( j == gw->n / 2 - 1 ) {
+                localStartStep = 1;
+            }
+
         }
+
+        globalStart += globalStartStep;
+        if ( i == gw->n / 2 - 1 ) {
+            globalStartStep = 1;
+        }
+
     }
 
     return gw;
@@ -103,8 +109,10 @@ void destroyGameWorld( GameWorld *gw ) {
  */
 void inputAndUpdateGameWorld( GameWorld *gw ) {
 
-    for ( int i = 0; i < gw->barQuantity; i++ ) {
-        updateBar( &gw->bars[i] );
+    for ( int i = 0; i < gw->n; i++ ) {
+        for ( int j = 0; j < gw->n; j++ ) {
+            updateBar( &gw->bars[i*gw->n+j] );
+        }
     }
 
 }
@@ -117,9 +125,42 @@ void drawGameWorld( GameWorld *gw ) {
     BeginDrawing();
     ClearBackground( WHITE );
 
-    for ( int i = 0; i < gw->barQuantity; i++ ) {
-        drawBar( &gw->bars[i] );
+    // infers level by level drawing order from top left corner
+
+    int quantity = 1;
+    int inc = 1;
+    int max = gw->n * 2 - 1;
+    int iOffset = 0;
+
+    for ( int levels = 0; levels < max; levels++ ) {
+
+        int iStart = 0 + iOffset;
+        int jStart = gw->n - levels - 1;
+        if ( jStart < 0 ) {
+            jStart = 0;
+        }
+
+        for ( int k = 0; k < quantity; k++ ) {
+            int i = iStart+k;
+            int j = jStart+k;
+            drawBar( &gw->bars[i*gw->n+j] );
+        }
+
+        quantity += inc;
+        if ( levels >= gw->n-2 ) {
+            inc = -1;
+        }
+        if ( levels > gw->n-2 ) {
+            iOffset++;
+        }
+
     }
+
+    /*for ( int i = 0; i < gw->n; i++ ) {
+        for ( int j = 0; j < gw->n; j++ ) {
+            drawBar( &gw->bars[i*gw->n+j] );
+        }
+    }*/
 
     EndDrawing();
 
