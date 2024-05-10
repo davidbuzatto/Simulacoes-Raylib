@@ -1,4 +1,7 @@
+#include <iostream>
+#include <format>
 #include <vector>
+#include <string>
 #include "EdgeWeightedGraph.h"
 #include "Edge.h"
 
@@ -23,12 +26,12 @@ int EdgeWeightedGraph::getE() {
     return e;
 }
 
-void EdgeWeightedGraph::addEdge( Edge& edge ) {
+void EdgeWeightedGraph::addEdge( Edge edge ) {
     int v = edge.either();
     int w = edge.other( v );
     adj[v].push_back( edge );
     adj[w].push_back( edge );
-    
+    e++;
 }
 
 std::vector<Edge>& EdgeWeightedGraph::getAdj( int vertex ) {
@@ -51,4 +54,19 @@ std::vector<Edge> EdgeWeightedGraph::edges() {
         }
     }
     return list;
+}
+
+std::string EdgeWeightedGraph::toString() {
+    std::string str;
+    str += std::format( "Vertices: {}\nEdges: {}\n", v, e );
+    for ( size_t i = 0; i < adj.size(); i++ ) {
+        if ( i != 0 ) {
+            str += "\n";
+        }
+        str += std::format( "{}: ", i );
+        for ( Edge e : adj[i] ) {
+            str += e.toString() + " ";
+        }
+    }
+    return str;
 }

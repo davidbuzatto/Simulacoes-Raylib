@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 class Edge {
 
     int v;
@@ -13,5 +15,6 @@ public:
     int either();
     int other( int vertex );
     int compare( Edge& edge );
+    std::string toString();
 
 };

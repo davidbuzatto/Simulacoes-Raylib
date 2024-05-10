@@ -7,6 +7,7 @@
  */
 #include <iostream>
 #include <string>
+#include <format>
 
 #include "GameWorld.h"
 #include "ResourceManager.h"
@@ -17,10 +18,53 @@
 //#include "raygui.h"              // other compilation units must only include
 //#undef RAYGUI_IMPLEMENTATION     // raygui.h
 
+#include "EdgeWeightedGraph.h"
+#include "Edge.h"
+#include "DijkstraUndirectedSP.h"
+
 /**
  * @brief Construct a new GameWorld object
  */
-GameWorld::GameWorld() = default;
+GameWorld::GameWorld() {
+
+    EdgeWeightedGraph g(8);
+
+    g.addEdge( Edge( 4, 5, 0.35 ) );
+    g.addEdge( Edge( 4, 7, 0.37 ) );
+    g.addEdge( Edge( 5, 7, 0.28 ) );
+    g.addEdge( Edge( 0, 7, 0.16 ) );
+    g.addEdge( Edge( 1, 5, 0.32 ) );
+    g.addEdge( Edge( 0, 4, 0.38 ) );
+    g.addEdge( Edge( 2, 3, 0.17 ) );
+    g.addEdge( Edge( 1, 7, 0.19 ) );
+    g.addEdge( Edge( 0, 2, 0.26 ) );
+    g.addEdge( Edge( 1, 2, 0.36 ) );
+    g.addEdge( Edge( 1, 3, 0.29 ) );
+    g.addEdge( Edge( 2, 7, 0.34 ) );
+    g.addEdge( Edge( 6, 2, 0.40 ) );
+    g.addEdge( Edge( 3, 6, 0.52 ) );
+    g.addEdge( Edge( 6, 0, 0.58 ) );
+    g.addEdge( Edge( 6, 4, 0.93 ) );
+    //std::cout << g.toString() << "\n";
+
+    int s = 6;
+    DijkstraUndirectedSP d( g, s );
+
+    for ( int i = 0; i < g.getV(); i++ ) {
+        if ( d.hasPathTo( i ) ) {
+            std::cout << std::format( "{} ate {} ({:.2f})  ", s, i, d.distToV(i) );
+            std::stack<Edge> p = d.pathTo(i);
+            while ( !p.empty() ) {
+                std::cout << p.top().toString() << "  ";
+                p.pop();
+            }
+            std::cout << "\n";
+        } else {
+            std::cout << std::format( "{} ate {} ({:.2f}) no path\n", s, i, d.distToV(i) );
+        }
+    }
+
+};
 
 /**
  * @brief Destroy the GameWorld object
@@ -42,14 +86,7 @@ void GameWorld::draw() {
     BeginDrawing();
     ClearBackground( WHITE );
 
-    const char *text = "Basic game template";
-    Vector2 m = MeasureTextEx( GetFontDefault(), text, 40, 4 );
-    int x = GetScreenWidth() / 2 - m.x / 2;
-    int y = GetScreenHeight() / 2 - m.y / 2;
-    DrawRectangle( x, y, m.x, m.y, BLACK );
-    DrawText( text, x, y, 40, WHITE );
-
-    DrawFPS( 20, 20 );
+    
 
     EndDrawing();
 

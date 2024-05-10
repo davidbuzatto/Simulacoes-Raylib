@@ -1,3 +1,6 @@
+#include <iostream>
+#include <format>
+#include <string>
 #include "Edge.h"
 
 Edge::Edge( int v, int w, float weight )
@@ -28,4 +31,8 @@ int Edge::compare( Edge& edge ) {
         return 1;
     }
     return 0;
+}
+
+std::string Edge::toString() {
+    return std::format( "{}-{} {:.2f}", v, w, weight );
 }
