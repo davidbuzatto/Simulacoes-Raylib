@@ -26,12 +26,8 @@
 GameWorld* createGameWorld( void ) {
 
     GameWorld *gw = (GameWorld*) malloc( sizeof( GameWorld ) );
-
-    gw->generation = 0;
-
-    int dimension = getDimensionFromGeneration( gw->generation );
-    gw->current = (char*) malloc( dimension * dimension * sizeof( char ) );
-    gw->current[0] = 'A';
+    gw->level = 1;
+    gw->maxLevel = 10;
 
     return gw;
 
@@ -50,79 +46,15 @@ void destroyGameWorld( GameWorld *gw ) {
 void inputAndUpdateGameWorld( GameWorld *gw ) {
 
     if ( IsKeyPressed( KEY_UP ) ) {
-
-        gw->generation++;
-
-        if ( gw->generation > 8 ) {
-            gw->generation = 8;
-        } else {
-
-            int currentDimension = getDimensionFromGeneration( gw->generation-1 );
-            int dimension = getDimensionFromGeneration( gw->generation );
-            size_t size = dimension * dimension * sizeof( char );
-
-            gw->next = (char*) malloc( size );
-
-            // process current generation
-            for ( int i = 0; i < currentDimension; i++ ) {
-                for ( int j = 0; j < currentDimension; j++ ) {
-
-                    int iBase = i*2;
-                    int jBase = j*2;
-
-                    int iUpLeft = iBase;
-                    int jUpLeft = jBase;
-
-                    int iUpRight = iBase;
-                    int jUpRight = jBase+1;
-
-                    int iDownLeft = iBase+1;
-                    int jDownLeft = jBase;
-
-                    int iDownRight = iBase+1;
-                    int jDownRight = jBase+1;
-
-                    switch ( gw->current[i*currentDimension+j] ) {
-                        case 'A':
-                            gw->next[iUpLeft*dimension+jUpLeft] = 'A';
-                            gw->next[iUpRight*dimension+jUpRight] = 'A';
-                            gw->next[iDownLeft*dimension+jDownLeft] = 'D';
-                            gw->next[iDownRight*dimension+jDownRight] = 'B';
-                            break;
-                        case 'B':
-                            gw->next[iUpLeft*dimension+jUpLeft] = 'B';
-                            gw->next[iUpRight*dimension+jUpRight] = 'C';
-                            gw->next[iDownLeft*dimension+jDownLeft] = 'B';
-                            gw->next[iDownRight*dimension+jDownRight] = 'A';
-                            break;
-                        case 'C':
-                            gw->next[iUpLeft*dimension+jUpLeft] = 'D';
-                            gw->next[iUpRight*dimension+jUpRight] = 'B';
-                            gw->next[iDownLeft*dimension+jDownLeft] = 'C';
-                            gw->next[iDownRight*dimension+jDownRight] = 'C';
-                            break;
-                        case 'D':
-                            gw->next[iUpLeft*dimension+jUpLeft] = 'C';
-                            gw->next[iUpRight*dimension+jUpRight] = 'D';
-                            gw->next[iDownLeft*dimension+jDownLeft] = 'A';
-                            gw->next[iDownRight*dimension+jDownRight] = 'D';
-                            break;
-                        default:
-                            assert( false );
-                            break;
-                    }
-
-                }
-            }
-
-
-            free( gw->current );
-            gw->current = (char*) malloc( size );
-            memcpy( gw->current, gw->next, size );
-            free( gw->next );
-
+        gw->level++;
+        if ( gw->level > gw->maxLevel ) {
+            gw->level = gw->maxLevel;
         }
-
+    } else if ( IsKeyPressed( KEY_DOWN ) ) {
+        gw->level--;
+        if ( gw->level < 1 ) {
+            gw->level = 1;
+        }
     }
 
 }
@@ -135,67 +67,13 @@ void drawGameWorld( GameWorld *gw ) {
     BeginDrawing();
     ClearBackground( WHITE );
 
-    int dimension = getDimensionFromGeneration( gw->generation );
-    float size = (float) GetScreenWidth() / dimension;
-    float size2 = (float) GetScreenWidth() / (dimension * 2);
-    float halfSize2 = size2 / 2;
+    float angle = 90;
+    float currentAngle = 180;
+    int level = gw->level;
+    float size = GetScreenWidth() / pow( 2, level );
+    Vector2 startPos = { GetScreenWidth() - size / 2, GetScreenHeight() - size / 2 };
 
-    /*DrawText( TextFormat( "generation: %d", gw->generation ), 20, 20, 20, BLACK );
-    DrawText( TextFormat( " dimension: %d", dimension ), 20, 40, 20, BLACK );
-
-    for ( int i = 0; i < dimension*2; i++ ) {
-        DrawLine( 0, size2*i, GetScreenWidth(), size2*i, BLACK );
-        DrawLine( size2*i, 0, size2*i, GetScreenHeight(), BLACK );
-    }*/
-
-    for ( int i = 0; i < dimension; i++ ) {
-        for ( int j = 0; j < dimension; j++ ) {
-
-            float xc = size2 + j * size;
-            float yc = size2 + i * size;
-            char c = gw->current[i*dimension+j];
-
-            /*DrawText( 
-                TextFormat( "%c", c ), 
-                xc, 
-                yc, 
-                20, BLACK );*/
-            
-            Vector2 vUpLeft = { xc - halfSize2, yc - halfSize2 };     // up left
-            Vector2 vUpRight = { xc + halfSize2, yc - halfSize2 };    // up right
-            Vector2 vDownLeft = { xc - halfSize2, yc + halfSize2 };   // down left
-            Vector2 vDownRight = { xc + halfSize2, yc + halfSize2 };  // down right
-            Vector2 vExtension1;
-            Vector2 vExtension2;
-
-            switch ( c ) {
-                case 'A':
-                    DrawLineV( vDownLeft, vUpLeft, BLACK );
-                    DrawLineV( vUpLeft, vUpRight, BLACK );
-                    DrawLineV( vUpRight, vDownRight, BLACK );
-                    break;
-                case 'B':
-                    DrawLineV( vUpRight, vUpLeft, BLACK );
-                    DrawLineV( vUpLeft, vDownLeft, BLACK );
-                    DrawLineV( vDownLeft, vDownRight, BLACK );
-                    break;
-                case 'C':
-                    DrawLineV( vUpRight, vDownRight, BLACK );
-                    DrawLineV( vDownRight, vDownLeft, BLACK );
-                    DrawLineV( vDownLeft, vUpLeft, BLACK );
-                    break;
-                case 'D':
-                    DrawLineV( vDownLeft, vDownRight, BLACK );
-                    DrawLineV( vDownRight, vUpRight, BLACK );
-                    DrawLineV( vUpRight, vUpLeft, BLACK );
-                    break;
-                default:
-                    assert( false );
-                    break;
-            }
-
-        }
-    }
+    hilbertCurve( &startPos, level, size, angle, &currentAngle );
 
     EndDrawing();
 
@@ -203,4 +81,39 @@ void drawGameWorld( GameWorld *gw ) {
 
 int getDimensionFromGeneration( int generation ) {
     return (int) sqrt( (int) pow( 4, generation ) );
+}
+
+void hilbertCurve( Vector2 *currentPos, int level, float size, float angle, float *currentAngle ) {
+
+    if ( level == 0 ) {
+        return;
+    }
+
+    *currentAngle += angle;
+    hilbertCurve( currentPos, level-1, size, -angle, currentAngle );
+
+    Vector2 newPos = { 
+        currentPos->x + size * cosf( DEG2RAD * *currentAngle ),
+        currentPos->y + size * sinf( DEG2RAD * *currentAngle )
+    };
+    DrawLineV( *currentPos, newPos, BLACK );
+    *currentPos = newPos;
+    *currentAngle -= angle;
+    hilbertCurve( currentPos, level-1, size, angle, currentAngle );
+
+    newPos.x = currentPos->x + size * cosf( DEG2RAD * *currentAngle );
+    newPos.y = currentPos->y + size * sinf( DEG2RAD * *currentAngle );
+    DrawLineV( *currentPos, newPos, BLACK );
+    *currentPos = newPos;
+    hilbertCurve( currentPos, level-1, size, angle, currentAngle );
+
+    *currentAngle -= angle;
+    newPos.x = currentPos->x + size * cosf( DEG2RAD * *currentAngle );
+    newPos.y = currentPos->y + size * sinf( DEG2RAD * *currentAngle );
+    DrawLineV( *currentPos, newPos, BLACK );
+    *currentPos = newPos;
+    hilbertCurve( currentPos, level-1, size, -angle, currentAngle );
+
+    *currentAngle += angle;
+
 }

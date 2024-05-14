@@ -7,13 +7,11 @@
  */
 #pragma once
 
+#include "raylib.h"
+
 typedef struct GameWorld {
-
-    int generation;
-
-    char *current;
-    char *next;
-
+    int level;
+    int maxLevel;
 } GameWorld;
 
 /**
@@ -37,3 +35,5 @@ void inputAndUpdateGameWorld( GameWorld *gw );
 void drawGameWorld( GameWorld *gw );
 
 int getDimensionFromGeneration( int generation );
+
+void hilbertCurve( Vector2 *currentPos, int level, float size, float angle, float *currentAngle );
