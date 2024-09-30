@@ -132,7 +132,7 @@ void inputAndUpdate( GameWorld *gw );
  */
 void draw( GameWorld *gw );
 void drawBall( Ball* ball );
-void moveBall( Ball* ball, GameWorld *gw );
+void moveBall( Ball* ball, GameWorld *gw, float delta );
 void resetBall( Ball *ball );
 void newBall( GameWorld *gw, Vector2 mousePos );
 void resetGameWorld( GameWorld *gw );
@@ -192,6 +192,8 @@ int main( void ) {
 }
 
 void inputAndUpdate( GameWorld *gw ) {
+
+    float delta = GetFrameTime();
 
     BallControlWindow *bcw = gw->ballControlWindow;
     BallPropertyWindow *bpw = gw->ballPropertyWindow;
@@ -310,12 +312,12 @@ void inputAndUpdate( GameWorld *gw ) {
     for ( int i = 0; i < gw->ballQuantity; i++ ) {
         Ball *b = gw->balls[i];
         if ( !b->dragging ) {
-            moveBall( b, gw );
+            moveBall( b, gw, delta );
         } else {
             float xDiff = mousePos.x - prevMousePos.x;
             float yDiff = mousePos.y - prevMousePos.y;
-            b->vel.x = xDiff * 50;
-            b->vel.y = yDiff * 50;
+            b->vel.x = xDiff / delta;
+            b->vel.y = yDiff / delta;
         }
     }
 
@@ -368,9 +370,7 @@ void drawBall( Ball* ball ) {
 
 }
 
-void moveBall( Ball* ball, GameWorld *gw ) {
-    
-    float delta = GetFrameTime();
+void moveBall( Ball* ball, GameWorld *gw, float delta ) {
 
     ball->pos.x += ball->vel.x * delta;
     ball->pos.y += ball->vel.y * delta;
